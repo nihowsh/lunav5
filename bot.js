@@ -13,7 +13,6 @@ const { Client: SelfbotClient } = require('discord.js-selfbot-v13');
 const Sequelize = require('sequelize');
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
 const { AttachmentRules: SharedAttachmentRules, AutoModConfig, WordFilter, ScheduledMentions, LogSettings, Warnings } = require('./database');
 require('dotenv').config();
 
