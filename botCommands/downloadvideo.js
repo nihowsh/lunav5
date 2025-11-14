@@ -97,20 +97,14 @@ async function downloadVideoYTDLP(url, outputPath) {
   try {
     await ytDlpExec(url, {
       output: outputPath,
-      format: 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
+      format: '(bv*+ba/b)[filesize<50M]/(bv*+ba/b)',
       mergeOutputFormat: 'mp4',
       noCheckCertificates: true,
       noCacheDir: true,
       extractorRetries: 10,
       retries: 15,
       noPlaylist: true,
-      extractorArgs: 'youtube:player_client=ios,web',
-      userAgent: 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)',
-      addHeader: [
-        'User-Agent:com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)',
-        'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language:en-us,en;q=0.5'
-      ]
+      cookies: process.env.YT_COOKIES || undefined
     });
     
     const exists = await fs.access(outputPath).then(() => true).catch(() => false);
