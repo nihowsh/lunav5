@@ -193,12 +193,6 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ============== KEEP-ALIVE SERVER ==============
-const app = express();
-app.get('/', (req, res) => res.send('OK'));
-const KEEPALIVE_PORT = process.env.PORT || 3000;
-app.listen(KEEPALIVE_PORT, () => console.log(`Keep-alive server running on port ${KEEPALIVE_PORT}`));
-
 // ============== ERROR HANDLERS ==============
 process.on('uncaughtException', err => {
   console.error('Uncaught Exception:', err);
