@@ -1,0 +1,35 @@
+modules = ["nodejs-20"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["yt-dlp", "ffmpeg"]
+
+[agent]
+expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Discord Bot"
+
+[[workflows.workflow]]
+name = "Discord Bot"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node bot.js"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

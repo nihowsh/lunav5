@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: discord-bot
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.3
+      - key: PYTHON_VERSION
+        value: 3.11

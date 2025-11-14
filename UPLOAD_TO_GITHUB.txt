@@ -1,0 +1,89 @@
+=== FILES TO UPLOAD TO GITHUB ===
+
+📁 ROOT FILES (upload these to root):
+✅ bot.js
+✅ index.js  
+✅ bot_selfbot_trigger.js
+✅ database.js
+✅ deploy-commands.js
+✅ package.json
+✅ package-lock.json
+✅ README.md
+✅ .gitignore
+✅ BOT_SETUP.md
+
+📁 BOTCOMMANDS FOLDER (create folder "botCommands" and upload ALL these):
+- addrole.js
+- attachmentrules.js
+- automod.js
+- ban.js
+- checkbans.js
+- clearwarns.js
+- downloadvideo.js
+- kick.js
+- loadclone.js
+- lock.js
+- lockdown.js
+- loggingUtils.js
+- manageinviteroles.js
+- massdm.js
+- modrules.js
+- mute.js
+- nickname.js
+- nuke.js
+- purge.js
+- removerole.js
+- saveclone.js
+- schedulemention.js
+- selfbot.js
+- serverstats.js
+- setinvitethreshold.js
+- setmodlog.js
+- slowmode.js
+- stopbroadcast.js
+- unban.js
+- unlock.js
+- unlockdown.js
+- unmute.js
+- warn.js
+- warnings.js
+- wordfilter.js
+
+📁 COMMANDS FOLDER (create folder "Commands" and upload ALL these):
+- broadcast.js
+- cembed.js
+- help.js
+- info.js
+- loop.js
+- ping.js
+- purge.js
+
+=== DO NOT UPLOAD ===
+❌ node_modules/ (will be created by npm install)
+❌ database.sqlite (will be created automatically)
+❌ config.json (users create their own)
+❌ .replit, replit.nix (Replit-specific)
+❌ .local/, .cache/ (cache files)
+
+=== GITHUB FOLDER STRUCTURE ===
+your-repo/
+├── bot.js
+├── index.js
+├── bot_selfbot_trigger.js
+├── database.js
+├── deploy-commands.js
+├── package.json
+├── package-lock.json
+├── README.md
+├── .gitignore
+├── BOT_SETUP.md
+├── botCommands/
+│   └── (all 35 .js files)
+└── Commands/
+    └── (all 7 .js files)
+
+=== AFTER UPLOADING TO GITHUB ===
+Users who clone your repo need to:
+1. Run: npm install
+2. Create config.json with their tokens
+3. Run: node bot.js

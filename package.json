@@ -1,0 +1,27 @@
+{
+  "name": "selfbot-frame",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "node bot.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "discord.js": "^14.24.2",
+    "discord.js-selfbot-v13": "^3.7.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "kyz": "^0.0.5",
+    "path": "^0.12.7",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7",
+    "yt-dlp-exec": "^1.0.2"
+  }
+}
