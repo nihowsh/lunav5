@@ -97,14 +97,20 @@ async function downloadVideoYTDLP(url, outputPath) {
   try {
     await ytDlpExec(url, {
       output: outputPath,
-      format: 'best[ext=mp4]/bestvideo*+bestaudio/best',
+      format: 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
       mergeOutputFormat: 'mp4',
       noCheckCertificates: true,
+      noCacheDir: true,
       extractorRetries: 10,
       retries: 15,
       noPlaylist: true,
-      extractorArgs: 'youtube:player_client=android',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      extractorArgs: 'youtube:player_client=ios,web',
+      userAgent: 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)',
+      addHeader: [
+        'User-Agent:com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)',
+        'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language:en-us,en;q=0.5'
+      ]
     });
     
     const exists = await fs.access(outputPath).then(() => true).catch(() => false);
