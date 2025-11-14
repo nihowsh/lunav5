@@ -1,3 +1,13 @@
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Bot is running!");
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Web server running");
+});
 const { Client, GatewayIntentBits, Collection, Partials, EmbedBuilder } = require('discord.js');
 const { Client: SelfbotClient } = require('discord.js-selfbot-v13');
 const Sequelize = require('sequelize');
