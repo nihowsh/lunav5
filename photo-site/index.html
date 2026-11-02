@@ -28,12 +28,24 @@
   <h1>Photo Editor &amp; Gallery</h1>
   <button id="tabEditor">Editor</button>
   <button id="tabGallery">Gallery</button>
+  <button id="logout" class="hidden">Log out</button>
 </header>
 
 <main>
-  <section id="editor">
+  <section id="login" class="hidden">
+    <h2>Log in or create an account</h2>
+    <div class="controls">
+      <label>Username <input id="user" autocomplete="username"></label>
+      <label>Password <input id="pass" type="password" autocomplete="current-password"></label>
+    </div>
+    <div class="row"><button id="doLogin">Log in</button><button id="doRegister">Create account</button></div>
+    <p id="loginMsg" class="empty"></p>
+  </section>
+
+  <section id="editor" class="hidden">
     <div class="row" style="margin-bottom:12px">
       <label class="btn">Open photo<input id="file" type="file" accept="image/*" hidden></label>
+      <label class="btn">Upload photos to gallery<input id="bulk" type="file" accept="image/*" multiple hidden></label>
     </div>
     <canvas id="canvas" width="600" height="400"></canvas>
     <div class="controls">
@@ -54,26 +66,20 @@
 
   <section id="gallery" class="hidden">
     <div id="grid"></div>
-    <p id="empty" class="empty hidden">No saved photos yet. Edit one and click "Save to gallery".</p>
+    <p id="empty" class="empty hidden">No photos yet. Upload some or edit one and click "Save to gallery".</p>
   </section>
 </main>
 
 <script>
-// ---------- Gallery storage (IndexedDB, stays in this browser) ----------
-const dbReady = new Promise((resolve, reject) => {
-  const req = indexedDB.open('photo-gallery', 1);
-  req.onupgradeneeded = () => req.result.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
-  req.onsuccess = () => resolve(req.result);
-  req.onerror = () => reject(req.error);
-});
-async function store(mode, fn) {
-  const db = await dbReady;
-  return new Promise((resolve, reject) => {
-    const req = fn(db.transaction('photos', mode).objectStore('photos'));
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+// ---------- Server API ----------
+let token = localStorage.getItem('token');
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + token } });
+  if (res.status === 401) { logout(); throw new Error('Not logged in'); }
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Request failed');
+  return res;
 }
+const upload = blob => api('/api/photos', { method: 'POST', headers: { 'Content-Type': blob.type }, body: blob });
 
 // ---------- Editor ----------
 const $ = id => document.getElementById(id);
@@ -130,41 +136,68 @@ $('download').onclick = () => {
 $('save').onclick = () => {
   if (!img) return alert('Open a photo first.');
   canvas.toBlob(async blob => {
-    await store('readwrite', s => s.add({ blob, date: Date.now() }));
-    alert('Saved to gallery!');
+    try { await upload(blob); alert('Saved to gallery!'); } catch (e) { alert(e.message); }
   }, 'image/png');
 };
 
 // ---------- Gallery view ----------
 async function renderGallery() {
-  const photos = await store('readonly', s => s.getAll());
   const grid = $('grid');
+  let photos;
+  try { photos = await (await api('/api/photos')).json(); } catch (e) { return; }
   grid.innerHTML = '';
   $('empty').classList.toggle('hidden', photos.length > 0);
-  photos.reverse().forEach(p => {
-    const url = URL.createObjectURL(p.blob);
+  for (const p of photos) {
     const div = document.createElement('div');
     div.className = 'item';
-    div.innerHTML = `<img src="${url}" alt="saved photo"><div class="row"><button>Edit</button><button>Download</button><button>Delete</button></div>`;
-    const [edit, dl, del] = div.querySelectorAll('button');
-    edit.onclick = () => {
-      const i = new Image();
-      i.onload = () => { img = i; resetAll(); show('editor'); };
-      i.src = url;
-    };
-    dl.onclick = () => { const a = document.createElement('a'); a.href = url; a.download = `photo-${p.id}.png`; a.click(); };
-    del.onclick = async () => { await store('readwrite', s => s.delete(p.id)); renderGallery(); };
+    div.innerHTML = '<img alt="photo"><div class="row"><button>Edit</button><button>Download</button><button>Delete</button></div>';
     grid.appendChild(div);
-  });
+    const imgEl = div.querySelector('img');
+    const [edit, dl, del] = div.querySelectorAll('button');
+    api('/api/photos/' + p.id).then(r => r.blob()).then(blob => {
+      const url = URL.createObjectURL(blob);
+      imgEl.src = url;
+      edit.onclick = () => { const i = new Image(); i.onload = () => { img = i; resetAll(); show('editor'); }; i.src = url; };
+      dl.onclick = () => { const a = document.createElement('a'); a.href = url; a.download = p.id; a.click(); };
+    });
+    del.onclick = async () => { if (confirm('Delete this photo?')) { await api('/api/photos/' + p.id, { method: 'DELETE' }); renderGallery(); } };
+  }
 }
 
 function show(tab) {
-  $('editor').classList.toggle('hidden', tab !== 'editor');
-  $('gallery').classList.toggle('hidden', tab !== 'gallery');
+  for (const t of ['login', 'editor', 'gallery']) $(t).classList.toggle('hidden', t !== tab);
   if (tab === 'gallery') renderGallery();
 }
+function logout() {
+  token = null; localStorage.removeItem('token');
+  $('logout').classList.add('hidden'); $('tabEditor').classList.add('hidden'); $('tabGallery').classList.add('hidden');
+  show('login');
+}
+function loggedIn(t) {
+  token = t; localStorage.setItem('token', t);
+  ['logout', 'tabEditor', 'tabGallery'].forEach(id => $(id).classList.remove('hidden'));
+  show('gallery');
+}
+async function auth(kind) {
+  const res = await fetch('/api/' + kind, { method: 'POST', body: JSON.stringify({ username: $('user').value, password: $('pass').value }) });
+  const data = await res.json();
+  if (res.ok) { $('loginMsg').textContent = ''; loggedIn(data.token); } else $('loginMsg').textContent = data.error;
+}
+$('doLogin').onclick = () => auth('login');
+$('doRegister').onclick = () => auth('register');
+$('logout').onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch {} logout(); };
 $('tabEditor').onclick = () => show('editor');
 $('tabGallery').onclick = () => show('gallery');
+
+$('bulk').onchange = async e => {
+  let n = 0;
+  for (const f of e.target.files) { try { await upload(f); n++; } catch (err) { alert(f.name + ': ' + err.message); } }
+  e.target.value = '';
+  alert(n + ' photo(s) uploaded.');
+  show('gallery');
+};
+
+if (token) loggedIn(token); else logout();
 </script>
 </body>
 </html>
